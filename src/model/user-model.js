@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import brcypt from "bcrypt";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
@@ -62,5 +62,54 @@ const userSchema = new Schema(
     timestamps: true,
   },
 );
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.createAccessToken = function () {
+  const accessToken = jwt.sign(
+    {
+      _id: this._id,
+      udername: this.username,
+      email: this.email,
+    },
+    process.env.ATS,
+    {
+      expiresIn: process.en.ATSE,
+    },
+  );
+  return accessToken;
+};
+userSchema.methods.generateRefreshToke = function () {
+  const refreshToken = jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.RTS,
+    {
+      expiresIn: process.env.RTSE,
+    },
+  );
+  return refreshToken;
+};
+
+userSchema.methods.generateTmpToken = function () {
+  const unhahedToken = crypto.randomBytes(20).toString("hex");
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(unhahedToken)
+    .digest("hex");
+  const tokenExpiry = Date.now + 20 * 60 * 1000;
+
+  return { unhahedToken, hashedToken, tokenExpiry };
+};
 
 export const User = mongoose.model("User", userSchema);
