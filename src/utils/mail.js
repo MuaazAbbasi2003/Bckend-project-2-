@@ -9,30 +9,37 @@ const sendemail = async (options) => {
       link: "https://TaskManager.com",
     },
   });
-};
-const emailText = mailGenerator.generatePlaintext(options.generateEmail);
-const emailHTML = mailGenerator.generate(options.generateEmail);
 
-var transporter = nodemailer.createTransport({
-  host: process.env.MAILTRAP_HOST,
-  port: process.env.MAILTRAP_PORT,
-  auth: {
-    user: process.env.MAILTRAP_USER,
-    pass: process.env.MAILTRAP_PASS,
-  },
-});
-const mail = {
-  from: "muaazabbasi2003@gmail.com ",
-  to: options.email,
-  subject: options.subject,
-  text: emailText,
-  html: emailHTML,
+  // 2. options.emailContent should be the object returned by generateEmail / forgotPasswordEmail
+  const emailText = mailGenerator.generatePlaintext(options.emailContent);
+  const emailHTML = mailGenerator.generate(options.emailContent);
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.MAILTRAP_HOST,
+    port: Number(process.env.MAILTRAP_PORT), // ensure number
+    auth: {
+      user: process.env.MAILTRAP_USER,
+      pass: process.env.MAILTRAP_PASS,
+    },
+  });
+
+  const mail = {
+    from: "muaazabbasi2003@gmail.com", // no trailing space
+    to: options.email,
+    subject: options.subject,
+    text: emailText,
+    html: emailHTML,
+  };
+
+  try {
+    const info = await transporter.sendMail(mail);
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error; // let caller know it failed
+  }
 };
-try {
-  await transporter.sendMail(mail);
-} catch (error) {
-  console.error("Error sending email:", error);
-}
+
 const generateEmail = (username, verificationURL) => {
   return {
     body: {
@@ -41,7 +48,7 @@ const generateEmail = (username, verificationURL) => {
       action: {
         instructions: "To get started with our App, please click here:",
         button: {
-          color: "#22BC66", // Optional action button color
+          color: "#22BC66",
           text: "Confirm your account",
           link: verificationURL,
         },
@@ -61,7 +68,7 @@ const forgotPasswordEmail = (username, forgotPasswordURL) => {
       action: {
         instructions: "To reset your password, please click here:",
         button: {
-          color: "#22BC66", // Optional action button color
+          color: "#22BC66",
           text: "Reset your password",
           link: forgotPasswordURL,
         },

@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import router from "./routes/healthcheck.router.js";
-
+import { registerUser } from "./Controllers/registerUser.controller.js";
 const app = express();
 
 app.get("/", (req, res) => {
@@ -27,5 +27,7 @@ app.use(
 );
 
 app.use("/api/v1/healthcheck", router);
+
+app.use("/api/v1/auth", registerUser);
 
 export default app;
