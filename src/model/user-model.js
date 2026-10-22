@@ -77,12 +77,12 @@ userSchema.methods.createAccessToken = function () {
   const accessToken = jwt.sign(
     {
       _id: this._id,
-      udername: this.username,
+      username: this.username,
       email: this.email,
     },
     process.env.ATS,
     {
-      expiresIn: process.en.ATSE,
+      expiresIn: process.env.ATSE,
     },
   );
   return accessToken;
@@ -107,7 +107,7 @@ userSchema.methods.generateTmpToken = function () {
     .createHash("sha256")
     .update(unhahedToken)
     .digest("hex");
-  const tokenExpiry = Date.now + 20 * 60 * 1000;
+  const tokenExpiry = Date.now() + 20 * 60 * 1000;
 
   return { unhahedToken, hashedToken, tokenExpiry };
 };

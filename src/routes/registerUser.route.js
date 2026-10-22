@@ -1,9 +1,19 @@
 import { Router } from "express";
-import { registerUser } from "../Controllers/registerUser.controller";
+import { login, registerUser } from "../Controllers/registerUser.controller.js";
 import { validate } from "../middelware/validator.middelware.js";
-import { userRegitorValidator } from "../validators/validators.js";
-const registerUser = Router();
+import {
+  userRegitorValidator,
+  userLogginVallidator,
+} from "../validators/validators.js";
+import { verifyJWT } from "../middelware/registerUser.middelware.js";
+import { logout } from "../Controllers/registerUser.controller.js";
+const userRouter = Router();
 
-router.route("/register").post(userRegitorValidator(), validate, registerUser);
+userRouter
+  .route("/register")
+  .post(userRegitorValidator(), validate, registerUser);
 
-export { registerUser };
+userRouter.route("/login").post(userLogginVallidator(), validate, login);
+userRouter.route("/logout").post(verifyJWT, logout);
+
+export { userRouter };
